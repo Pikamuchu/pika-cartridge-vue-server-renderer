@@ -1,5 +1,5 @@
 {
-    "name": "cartridge_lib_vue-server-renderer",
+    "name": "cartridge_lib_vue_server_renderer",
     "version": "1.0.0",
     "description": "Cartridge library from vue-server-renderer node module",
     "main": "cartridges/lib_vue-server-renderer/cartridge/scripts/lib/vue-server-renderer/index.js",

@@ -31,7 +31,7 @@ $ npm run uploadCartridge
 This library can be added to an existing SFRA project as npm library dependency using
 
 ````
-$ npm i cartridge_lib_vue-server-renderer
+$ npm i cartridge_lib_vue_server_renderer
 ````
 
 This option is recommended for develop environments using [vscode](https://code.visualstudio.com/) + [Prophet Debugger](https://marketplace.visualstudio.com/items?itemName=SqrTT.prophet)
