@@ -1,23 +1,20 @@
-import Vue from 'vue';
 const sinon = require('sinon');
 const { assert } = require('chai');
 const searchquire = require('searchquire');
 
-
 describe('vue-server-renderer library', () => {
+    let Vue;
     let vueServerRenderer;
 
     before(() => {
         // initialize test config and spies
-        vueServerRenderer = searchquire(
-            '*/cartridge/scripts/lib/vue-server-renderer/basic',
-            {
-                basePath: '../cartridges/lib_vue-server-renderer/cartridge',
-                pattern: '*/cartridge/(.*)',
-                maxSearchModuleIterations: 20
-            },
-            {}
-        );
+        const cartridgeConfig = {
+            basePath: '../cartridges/lib_vue-server-renderer/cartridge',
+            pattern: '*/cartridge/(.*)',
+            maxSearchModuleIterations: 20
+        };
+        Vue = searchquire('*/cartridge/scripts/lib/vue/index', cartridgeConfig);
+        vueServerRenderer = searchquire('*/cartridge/scripts/lib/vue-server-renderer/index', cartridgeConfig);
     });
 
     beforeEach(() => {
@@ -87,9 +84,7 @@ describe('vue-server-renderer library', () => {
             let ssrContext;
             vueServerRenderer(
                 new Vue({
-                    template: `
-                <div></div>
-              `,
+                    template: '<div></div>',
                     created() {
                         ssrContext = this.$ssrContext;
                     }

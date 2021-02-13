@@ -10,6 +10,7 @@ Cartridge library from [vue-server-renderer](https://www.npmjs.com/package/vue-s
 
 ## Build with
 
+* [vue](https://www.npmjs.com/package/vue)
 * [vue-server-renderer](https://www.npmjs.com/package/vue-server-renderer)
 * [Generator Cartridge Lib Module](https://www.npmjs.com/package/generator-cartridge-lib-module)
 
