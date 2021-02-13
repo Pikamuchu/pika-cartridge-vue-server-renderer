@@ -32,6 +32,7 @@
     },
     "homepage": "https://github.com/pikamachu/pika-cartridge-vue-server-renderer",
     "devDependencies": {
+        "vue": "^2.6.12",
         "vue-server-renderer": "2.6.12",
         "@babel/cli": "^7.8.4",
         "@babel/core": "^7.9.0",
