@@ -1,11 +1,45 @@
-(function(global, factory) {
+(function (global, factory) {
     typeof exports === 'object' && typeof module !== 'undefined'
         ? (module.exports = factory())
         : typeof define === 'function' && define.amd
         ? define(factory)
         : ((global = global || self), (global.renderVueComponentToString = factory()));
-})(this, function() {
+}(this, function () {
     'use strict';
+
+    // SetTimeout workaround
+
+    var tcounter = 1;
+    var ids = {};
+
+    var setTimeout = function (fn, delay) {
+        var id = tcounter;
+        tcounter += 1;
+        timerHack(fn, delay);
+        return id;
+    };
+
+    var clearTimeout = function (id) {
+        ids[id].cancel();
+        // timer.purge();
+        delete ids[id];
+    };
+
+    var setInterval = function (fn, delay) {
+        var id = tcounter;
+        tcounter += 1;
+        timerHack(fn, delay);
+        return id;
+    };
+
+    var timerHack = function (fn, delay) {
+        // var timer = new java.util.Timer();
+        // ids[id] = new JavaAdapter(java.util.TimerTask, { run: fn });
+        // timer.schedule(ids[id], delay, delay);
+        fn();
+        return 'id' + tcounter;
+    };
+
 
     var emptyObject = Object.freeze({});
 
@@ -54,7 +88,7 @@
     }
 
     function isPromise(val) {
-        return isDef(val) && typeof val.then === 'function' && typeof val['catch'] === 'function';
+        return isDef(val) && typeof val.then === 'function' && typeof val.catch === 'function';
     }
 
     function toString(val) {
@@ -79,12 +113,12 @@
         }
 
         return expectsLowerCase
-            ? function(val) {
-                  return map[val.toLowerCase()];
-              }
-            : function(val) {
-                  return map[val];
-              };
+            ? function (val) {
+                return map[val.toLowerCase()];
+            }
+            : function (val) {
+                return map[val];
+            };
     }
 
     var isBuiltInTag = makeMap('slot,component', true);
@@ -115,16 +149,16 @@
     }
 
     var camelizeRE = /-(\w)/g;
-    var camelize = cached(function(str) {
-        return str.replace(camelizeRE, function(_, c) {
+    var camelize = cached(function (str) {
+        return str.replace(camelizeRE, function (_, c) {
             return c ? c.toUpperCase() : '';
         });
     });
-    var capitalize = cached(function(str) {
+    var capitalize = cached(function (str) {
         return str.charAt(0).toUpperCase() + str.slice(1);
     });
     var hyphenateRE = /\B([A-Z])/g;
-    var hyphenate = cached(function(str) {
+    var hyphenate = cached(function (str) {
         return str.replace(hyphenateRE, '-$1').toLowerCase();
     });
 
@@ -176,7 +210,7 @@
 
     function genStaticKeys(modules) {
         return modules
-            .reduce(function(keys, m) {
+            .reduce(function (keys, m) {
                 return keys.concat(m.staticKeys || []);
             }, [])
             .join(',');
@@ -198,7 +232,7 @@
                 if (isArrayA && isArrayB) {
                     return (
                         a.length === b.length &&
-                        a.every(function(e, i) {
+                        a.every(function (e, i) {
                             return looseEqual(e, b[i]);
                         })
                     );
@@ -209,13 +243,12 @@
                     var keysB = Object.keys(b);
                     return (
                         keysA.length === keysB.length &&
-                        keysA.every(function(key) {
+                        keysA.every(function (key) {
                             return looseEqual(a[key], b[key]);
                         })
                     );
-                } else {
-                    return false;
                 }
+                return false;
             } catch (e) {
                 return false;
             }
@@ -238,7 +271,7 @@
 
     function once(fn) {
         var called = false;
-        return function() {
+        return function () {
             if (!called) {
                 called = true;
                 fn.apply(this, arguments);
@@ -453,7 +486,7 @@
         }
     };
 
-    prototypeAccessors.child.get = function() {
+    prototypeAccessors.child.get = function () {
         return this.componentInstance;
     };
 
@@ -579,7 +612,7 @@
     var isServerRendering = function isServerRendering() {
         if (_isServer === undefined) {
             if (!inBrowser && !inWeex && typeof global !== 'undefined') {
-                _isServer = global['process'] && global['process'].env.VUE_ENV === 'server';
+                _isServer = global.process && global.process.env.VUE_ENV === 'server';
             } else {
                 _isServer = false;
             }
@@ -605,7 +638,7 @@
     if (typeof Set !== 'undefined' && isNative(Set)) {
         _Set = Set;
     } else {
-        _Set = (function() {
+        _Set = (function () {
             function Set() {
                 this.set = Object.create(null);
             }
@@ -623,7 +656,7 @@
             };
 
             return Set;
-        })();
+        }());
     }
 
     var SSR_ATTR = 'data-server-rendered';
@@ -671,7 +704,7 @@
 
         var classify = function classify(str) {
             return str
-                .replace(classifyRE, function(c) {
+                .replace(classifyRE, function (c) {
                     return c.toUpperCase();
                 })
                 .replace(/[-_]/g, '');
@@ -760,7 +793,7 @@
                 return (
                     '\n\nfound in\n\n' +
                     tree
-                        .map(function(vm, i) {
+                        .map(function (vm, i) {
                             return (
                                 '' +
                                 (i === 0 ? '---> ' : repeat(' ', 5 + i * 2)) +
@@ -771,9 +804,8 @@
                         })
                         .join('\n')
                 );
-            } else {
-                return '\n\n(found in ' + formatComponentName(vm) + ')';
             }
+            return '\n\n(found in ' + formatComponentName(vm) + ')';
         };
     }
     var uid = 0;
@@ -821,7 +853,7 @@
     var arrayProto = Array.prototype;
     var arrayMethods = Object.create(arrayProto);
     var methodsToPatch = ['push', 'pop', 'shift', 'unshift', 'splice', 'sort', 'reverse'];
-    methodsToPatch.forEach(function(method) {
+    methodsToPatch.forEach(function (method) {
         var original = arrayProto[method];
         def(arrayMethods, method, function mutator() {
             var args = [],
@@ -1043,7 +1075,7 @@
 
     var strats = config.optionMergeStrategies;
     {
-        strats.el = strats.propsData = function(parent, child, vm, key) {
+        strats.el = strats.propsData = function (parent, child, vm, key) {
             if (!vm) {
                 warn('option "' + key + '" can only be used during instance ' + 'creation with the `new` keyword.');
             }
@@ -1057,7 +1089,9 @@
             return to;
         }
 
-        var key, toVal, fromVal;
+        var key,
+            toVal,
+            fromVal;
         var keys = hasSymbol ? Reflect.ownKeys(from) : Object.keys(from);
 
         for (var i = 0; i < keys.length; i++) {
@@ -1096,21 +1130,19 @@
                     typeof parentVal === 'function' ? parentVal.call(this, this) : parentVal
                 );
             };
-        } else {
-            return function mergedInstanceDataFn() {
-                var instanceData = typeof childVal === 'function' ? childVal.call(vm, vm) : childVal;
-                var defaultData = typeof parentVal === 'function' ? parentVal.call(vm, vm) : parentVal;
-
-                if (instanceData) {
-                    return mergeData(instanceData, defaultData);
-                } else {
-                    return defaultData;
-                }
-            };
         }
+        return function mergedInstanceDataFn() {
+            var instanceData = typeof childVal === 'function' ? childVal.call(vm, vm) : childVal;
+            var defaultData = typeof parentVal === 'function' ? parentVal.call(vm, vm) : parentVal;
+
+            if (instanceData) {
+                return mergeData(instanceData, defaultData);
+            }
+            return defaultData;
+        };
     }
 
-    strats.data = function(parentVal, childVal, vm) {
+    strats.data = function (parentVal, childVal, vm) {
         if (!vm) {
             if (childVal && typeof childVal !== 'function') {
                 warn(
@@ -1151,7 +1183,7 @@
         return res;
     }
 
-    LIFECYCLE_HOOKS.forEach(function(hook) {
+    LIFECYCLE_HOOKS.forEach(function (hook) {
         strats[hook] = mergeHook;
     });
 
@@ -1161,16 +1193,15 @@
         if (childVal) {
             assertObjectType(key, childVal, vm);
             return extend(res, childVal);
-        } else {
-            return res;
         }
+        return res;
     }
 
-    ASSET_TYPES.forEach(function(type) {
+    ASSET_TYPES.forEach(function (type) {
         strats[type + 's'] = mergeAssets;
     });
 
-    strats.watch = function(parentVal, childVal, vm, key) {
+    strats.watch = function (parentVal, childVal, vm, key) {
         if (parentVal === nativeWatch) {
             parentVal = undefined;
         }
@@ -1208,7 +1239,7 @@
         return ret;
     };
 
-    strats.props = strats.methods = strats.inject = strats.computed = function(parentVal, childVal, vm, key) {
+    strats.props = strats.methods = strats.inject = strats.computed = function (parentVal, childVal, vm, key) {
         if (childVal && 'development' !== 'production') {
             assertObjectType(key, childVal, vm);
         }
@@ -1262,7 +1293,9 @@
         }
 
         var res = {};
-        var i, val, name;
+        var i,
+            val,
+            name;
 
         if (Array.isArray(props)) {
             i = props.length;
@@ -1286,8 +1319,8 @@
                 res[name] = isPlainObject(val)
                     ? val
                     : {
-                          type: val
-                      };
+                        type: val
+                    };
             }
         } else {
             warn(
@@ -1322,14 +1355,14 @@
                 var val = inject[key];
                 normalized[key] = isPlainObject(val)
                     ? extend(
-                          {
-                              from: key
-                          },
+                        {
+                            from: key
+                        },
                           val
                       )
                     : {
-                          from: val
-                      };
+                        from: val
+                    };
             }
         } else {
             warn(
@@ -1382,8 +1415,8 @@
         normalizeDirectives(child);
 
         if (!child._base) {
-            if (child['extends']) {
-                parent = mergeOptions(parent, child['extends'], vm);
+            if (child.extends) {
+                parent = mergeOptions(parent, child.extends, vm);
             }
 
             if (child.mixins) {
@@ -1483,7 +1516,7 @@
             return undefined;
         }
 
-        var def = prop['default'];
+        var def = prop.default;
 
         if (isObject(def)) {
             warn(
@@ -1623,14 +1656,13 @@
             return '"' + value + '"';
         } else if (type === 'Number') {
             return '' + Number(value);
-        } else {
-            return '' + value;
         }
+        return '' + value;
     }
 
     function isExplicable(value) {
         var explicitTypes = ['string', 'number', 'boolean'];
-        return explicitTypes.some(function(elem) {
+        return explicitTypes.some(function (elem) {
             return value.toLowerCase() === elem;
         });
     }
@@ -1643,7 +1675,7 @@
             args[len] = arguments[len];
         }
 
-        return args.some(function(elem) {
+        return args.some(function (elem) {
             return elem.toLowerCase() === 'boolean';
         });
     }
@@ -1687,7 +1719,7 @@
             res = args ? handler.apply(context, args) : handler.call(context);
 
             if (res && !res._isVue && isPromise(res) && !res._handled) {
-                res['catch'](function(e) {
+                res.catch(function (e) {
                     return handleError(e, vm, info + ' (Promise/async)');
                 });
                 res._handled = true;
@@ -1759,13 +1791,13 @@
             }
         }
 
-        return renderClass(data.staticClass, data['class']);
+        return renderClass(data.staticClass, data.class);
     }
 
     function mergeClassData(child, parent) {
         return {
             staticClass: concat(child.staticClass, parent.staticClass),
-            class: isDef(child['class']) ? [child['class'], parent['class']] : parent['class']
+            class: isDef(child.class) ? [child.class, parent.class] : parent.class
         };
     }
 
@@ -1878,11 +1910,11 @@
         }
     }
 
-    var parseStyleText = cached(function(cssText) {
+    var parseStyleText = cached(function (cssText) {
         var res = {};
         var listDelimiter = /;(?![^(]*\))/g;
         var propertyDelimiter = /:(.+)/;
-        cssText.split(listDelimiter).forEach(function(item) {
+        cssText.split(listDelimiter).forEach(function (item) {
             if (item) {
                 var tmp = item.split(propertyDelimiter);
                 tmp.length > 1 && (res[tmp[0].trim()] = tmp[1].trim());
@@ -1961,9 +1993,8 @@
     function normalizeValue(key, value) {
         if (typeof value === 'string' || (typeof value === 'number' && noUnitNumericStyleProps[key]) || value === 0) {
             return key + ':' + value + ';';
-        } else {
-            return '';
         }
+        return '';
     }
 
     function renderStyle(vnode) {
@@ -2008,11 +2039,9 @@
                     if (selected) {
                         setSelected(option);
                     }
-                } else {
-                    if (looseEqual(value, getValue(option))) {
-                        setSelected(option);
-                        return;
-                    }
+                } else if (looseEqual(value, getValue(option))) {
+                    setSelected(option);
+                    return;
                 }
             }
         }
@@ -2058,9 +2087,9 @@
         typeof process !== 'undefined' && process.nextTick
             ? process.nextTick
             : typeof Promise !== 'undefined'
-            ? function(fn) {
-                  return Promise.resolve().then(fn);
-              }
+            ? function (fn) {
+                return Promise.resolve().then(fn);
+            }
             : typeof setTimeout !== 'undefined'
             ? setTimeout
             : noop$1;
@@ -2085,7 +2114,7 @@
 
             if (waitForNext !== true) {
                 if (stackDepth >= MAX_STACK_DEPTH) {
-                    defer(function() {
+                    defer(function () {
                         try {
                             next();
                         } catch (e) {
@@ -2145,13 +2174,13 @@
 
                     if (rendered < total) {
                         return this.renderNode(children[rendered], false, this);
-                    } else {
-                        this.renderStates.pop();
-
-                        if (lastState.type === 'Element') {
-                            return this.write(lastState.endTag, this.next);
-                        }
                     }
+                    this.renderStates.pop();
+
+                    if (lastState.type === 'Element') {
+                        return this.write(lastState.endTag, this.next);
+                    }
+
 
                     break;
 
@@ -2177,7 +2206,7 @@
                     } else {
                         buffer[bufferIndex - 1] += result.html;
                         var prev = componentBuffer[bufferIndex - 1];
-                        result.components.forEach(function(c) {
+                        result.components.forEach(function (c) {
                             return prev.add(c);
                         });
                     }
@@ -2195,14 +2224,13 @@
         if (isUndef(fn)) {
             return;
         } else if (fn.length > 1) {
-            return function(key, cb) {
+            return function (key, cb) {
                 return fn.call(cache, key, cb);
             };
-        } else {
-            return function(key, cb) {
-                return cb(fn.call(cache, key));
-            };
         }
+        return function (key, cb) {
+            return cb(fn.call(cache, key));
+        };
     }
 
     var validDivisionCharRE = /[\w).+\-_$\]]/;
@@ -2216,7 +2244,11 @@
         var square = 0;
         var paren = 0;
         var lastFilterIndex = 0;
-        var c, prev, i, expression, filters;
+        var c,
+            prev,
+            i,
+            expression,
+            filters;
 
         for (i = 0; i < exp.length; i++) {
             prev = c;
@@ -2335,16 +2367,15 @@
 
         if (i < 0) {
             return '_f("' + filter + '")(' + exp + ')';
-        } else {
-            var name = filter.slice(0, i);
-            var args = filter.slice(i + 1);
-            return '_f("' + name + '")(' + exp + (args !== ')' ? ',' + args : args);
         }
+        var name = filter.slice(0, i);
+        var args = filter.slice(i + 1);
+        return '_f("' + name + '")(' + exp + (args !== ')' ? ',' + args : args);
     }
 
     var defaultTagRE = /\{\{((?:.|\r?\n)+?)\}\}/g;
     var regexEscapeRE = /[-.*+?^${}()|[\]\/\\]/g;
-    var buildRegex = cached(function(delimiters) {
+    var buildRegex = cached(function (delimiters) {
         var open = delimiters[0].replace(regexEscapeRE, '\\$&');
         var close = delimiters[1].replace(regexEscapeRE, '\\$&');
         return new RegExp(open + '((?:.|\\n)+?)' + close, 'g');
@@ -2360,7 +2391,9 @@
         var tokens = [];
         var rawTokens = [];
         var lastIndex = (tagRE.lastIndex = 0);
-        var match, index, tokenValue;
+        var match,
+            index,
+            tokenValue;
 
         while ((match = tagRE.exec(text))) {
             index = match.index;
@@ -2396,10 +2429,10 @@
     function pluckModuleFunction(modules, key) {
         return modules
             ? modules
-                  .map(function(m) {
+                  .map(function (m) {
                       return m[key];
                   })
-                  .filter(function(_) {
+                  .filter(function (_) {
                       return _;
                   })
             : [];
@@ -2510,8 +2543,8 @@
 
         var events;
 
-        if (modifiers['native']) {
-            delete modifiers['native'];
+        if (modifiers.native) {
+            delete modifiers.native;
             events = el.nativeEvents || (el.nativeEvents = {});
         } else {
             events = el.events || (el.events = {});
@@ -2623,7 +2656,7 @@
                         'Interpolation inside attributes has been removed. ' +
                         'Use v-bind or the colon shorthand instead. For example, ' +
                         'instead of <div class="{{ val }}">, use <div :class="val">.',
-                    el.rawAttrsMap['class']
+                    el.rawAttrsMap.class
                 );
             }
         }
@@ -2675,7 +2708,7 @@
                             'Interpolation inside attributes has been removed. ' +
                             'Use v-bind or the colon shorthand instead. For example, ' +
                             'instead of <div style="{{ val }}">, use <div :style="val">.',
-                        el.rawAttrsMap['style']
+                        el.rawAttrsMap.style
                     );
                 }
             }
@@ -2727,11 +2760,11 @@
         );
     }
 
-    var he = createCommonjsModule(function(module, exports) {
-        (function(root) {
+    var he = createCommonjsModule(function (module, exports) {
+        (function (root) {
             var freeExports = exports;
             var freeModule = module && module.exports == freeExports && module;
-            var freeGlobal = typeof commonjsGlobal == 'object' && commonjsGlobal;
+            var freeGlobal = typeof commonjsGlobal === 'object' && commonjsGlobal;
 
             if (freeGlobal.global === freeGlobal || freeGlobal.window === freeGlobal) {
                 root = freeGlobal;
@@ -2873,7 +2906,7 @@
                 '\xA9': 'copy',
                 '\xAE': 'reg',
                 '\u2117': 'copysr',
-                '\u2118': 'wp',
+                // ℘: 'wp',
                 '\u211E': 'rx',
                 '\u2127': 'mho',
                 '\u2129': 'iiota',
@@ -4266,6 +4299,7 @@
             var regexInvalidEntity = /&#(?:[xX][^a-fA-F0-9]|[^0-9xX])/;
             var regexInvalidRawCodePoint = /[\0-\x08\x0B\x0E-\x1F\x7F-\x9F\uFDD0-\uFDEF\uFFFE\uFFFF]|[\uD83F\uD87F\uD8BF\uD8FF\uD93F\uD97F\uD9BF\uD9FF\uDA3F\uDA7F\uDABF\uDAFF\uDB3F\uDB7F\uDBBF\uDBFF][\uDFFE\uDFFF]|[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?:[^\uD800-\uDBFF]|^)[\uDC00-\uDFFF]/;
             var regexDecode = /&(CounterClockwiseContourIntegral|DoubleLongLeftRightArrow|ClockwiseContourIntegral|NotNestedGreaterGreater|NotSquareSupersetEqual|DiacriticalDoubleAcute|NotRightTriangleEqual|NotSucceedsSlantEqual|NotPrecedesSlantEqual|CloseCurlyDoubleQuote|NegativeVeryThinSpace|DoubleContourIntegral|FilledVerySmallSquare|CapitalDifferentialD|OpenCurlyDoubleQuote|EmptyVerySmallSquare|NestedGreaterGreater|DoubleLongRightArrow|NotLeftTriangleEqual|NotGreaterSlantEqual|ReverseUpEquilibrium|DoubleLeftRightArrow|NotSquareSubsetEqual|NotDoubleVerticalBar|RightArrowLeftArrow|NotGreaterFullEqual|NotRightTriangleBar|SquareSupersetEqual|DownLeftRightVector|DoubleLongLeftArrow|leftrightsquigarrow|LeftArrowRightArrow|NegativeMediumSpace|blacktriangleright|RightDownVectorBar|PrecedesSlantEqual|RightDoubleBracket|SucceedsSlantEqual|NotLeftTriangleBar|RightTriangleEqual|SquareIntersection|RightDownTeeVector|ReverseEquilibrium|NegativeThickSpace|longleftrightarrow|Longleftrightarrow|LongLeftRightArrow|DownRightTeeVector|DownRightVectorBar|GreaterSlantEqual|SquareSubsetEqual|LeftDownVectorBar|LeftDoubleBracket|VerticalSeparator|rightleftharpoons|NotGreaterGreater|NotSquareSuperset|blacktriangleleft|blacktriangledown|NegativeThinSpace|LeftDownTeeVector|NotLessSlantEqual|leftrightharpoons|DoubleUpDownArrow|DoubleVerticalBar|LeftTriangleEqual|FilledSmallSquare|twoheadrightarrow|NotNestedLessLess|DownLeftTeeVector|DownLeftVectorBar|RightAngleBracket|NotTildeFullEqual|NotReverseElement|RightUpDownVector|DiacriticalTilde|NotSucceedsTilde|circlearrowright|NotPrecedesEqual|rightharpoondown|DoubleRightArrow|NotSucceedsEqual|NonBreakingSpace|NotRightTriangle|LessEqualGreater|RightUpTeeVector|LeftAngleBracket|GreaterFullEqual|DownArrowUpArrow|RightUpVectorBar|twoheadleftarrow|GreaterEqualLess|downharpoonright|RightTriangleBar|ntrianglerighteq|NotSupersetEqual|LeftUpDownVector|DiacriticalAcute|rightrightarrows|vartriangleright|UpArrowDownArrow|DiacriticalGrave|UnderParenthesis|EmptySmallSquare|LeftUpVectorBar|leftrightarrows|DownRightVector|downharpoonleft|trianglerighteq|ShortRightArrow|OverParenthesis|DoubleLeftArrow|DoubleDownArrow|NotSquareSubset|bigtriangledown|ntrianglelefteq|UpperRightArrow|curvearrowright|vartriangleleft|NotLeftTriangle|nleftrightarrow|LowerRightArrow|NotHumpDownHump|NotGreaterTilde|rightthreetimes|LeftUpTeeVector|NotGreaterEqual|straightepsilon|LeftTriangleBar|rightsquigarrow|ContourIntegral|rightleftarrows|CloseCurlyQuote|RightDownVector|LeftRightVector|nLeftrightarrow|leftharpoondown|circlearrowleft|SquareSuperset|OpenCurlyQuote|hookrightarrow|HorizontalLine|DiacriticalDot|NotLessGreater|ntriangleright|DoubleRightTee|InvisibleComma|InvisibleTimes|LowerLeftArrow|DownLeftVector|NotSubsetEqual|curvearrowleft|trianglelefteq|NotVerticalBar|TildeFullEqual|downdownarrows|NotGreaterLess|RightTeeVector|ZeroWidthSpace|looparrowright|LongRightArrow|doublebarwedge|ShortLeftArrow|ShortDownArrow|RightVectorBar|GreaterGreater|ReverseElement|rightharpoonup|LessSlantEqual|leftthreetimes|upharpoonright|rightarrowtail|LeftDownVector|Longrightarrow|NestedLessLess|UpperLeftArrow|nshortparallel|leftleftarrows|leftrightarrow|Leftrightarrow|LeftRightArrow|longrightarrow|upharpoonleft|RightArrowBar|ApplyFunction|LeftTeeVector|leftarrowtail|NotEqualTilde|varsubsetneqq|varsupsetneqq|RightTeeArrow|SucceedsEqual|SucceedsTilde|LeftVectorBar|SupersetEqual|hookleftarrow|DifferentialD|VerticalTilde|VeryThinSpace|blacktriangle|bigtriangleup|LessFullEqual|divideontimes|leftharpoonup|UpEquilibrium|ntriangleleft|RightTriangle|measuredangle|shortparallel|longleftarrow|Longleftarrow|LongLeftArrow|DoubleLeftTee|Poincareplane|PrecedesEqual|triangleright|DoubleUpArrow|RightUpVector|fallingdotseq|looparrowleft|PrecedesTilde|NotTildeEqual|NotTildeTilde|smallsetminus|Proportional|triangleleft|triangledown|UnderBracket|NotHumpEqual|exponentiale|ExponentialE|NotLessTilde|HilbertSpace|RightCeiling|blacklozenge|varsupsetneq|HumpDownHump|GreaterEqual|VerticalLine|LeftTeeArrow|NotLessEqual|DownTeeArrow|LeftTriangle|varsubsetneq|Intersection|NotCongruent|DownArrowBar|LeftUpVector|LeftArrowBar|risingdotseq|GreaterTilde|RoundImplies|SquareSubset|ShortUpArrow|NotSuperset|quaternions|precnapprox|backepsilon|preccurlyeq|OverBracket|blacksquare|MediumSpace|VerticalBar|circledcirc|circleddash|CircleMinus|CircleTimes|LessGreater|curlyeqprec|curlyeqsucc|diamondsuit|UpDownArrow|Updownarrow|RuleDelayed|Rrightarrow|updownarrow|RightVector|nRightarrow|nrightarrow|eqslantless|LeftCeiling|Equilibrium|SmallCircle|expectation|NotSucceeds|thickapprox|GreaterLess|SquareUnion|NotPrecedes|NotLessLess|straightphi|succnapprox|succcurlyeq|SubsetEqual|sqsupseteq|Proportion|Laplacetrf|ImaginaryI|supsetneqq|NotGreater|gtreqqless|NotElement|ThickSpace|TildeEqual|TildeTilde|Fouriertrf|rmoustache|EqualTilde|eqslantgtr|UnderBrace|LeftVector|UpArrowBar|nLeftarrow|nsubseteqq|subsetneqq|nsupseteqq|nleftarrow|succapprox|lessapprox|UpTeeArrow|upuparrows|curlywedge|lesseqqgtr|varepsilon|varnothing|RightFloor|complement|CirclePlus|sqsubseteq|Lleftarrow|circledast|RightArrow|Rightarrow|rightarrow|lmoustache|Bernoullis|precapprox|mapstoleft|mapstodown|longmapsto|dotsquare|downarrow|DoubleDot|nsubseteq|supsetneq|leftarrow|nsupseteq|subsetneq|ThinSpace|ngeqslant|subseteqq|HumpEqual|NotSubset|triangleq|NotCupCap|lesseqgtr|heartsuit|TripleDot|Leftarrow|Coproduct|Congruent|varpropto|complexes|gvertneqq|LeftArrow|LessTilde|supseteqq|MinusPlus|CircleDot|nleqslant|NotExists|gtreqless|nparallel|UnionPlus|LeftFloor|checkmark|CenterDot|centerdot|Mellintrf|gtrapprox|bigotimes|OverBrace|spadesuit|therefore|pitchfork|rationals|PlusMinus|Backslash|Therefore|DownBreve|backsimeq|backprime|DownArrow|nshortmid|Downarrow|lvertneqq|eqvparsl|imagline|imagpart|infintie|integers|Integral|intercal|LessLess|Uarrocir|intlarhk|sqsupset|angmsdaf|sqsubset|llcorner|vartheta|cupbrcap|lnapprox|Superset|SuchThat|succnsim|succneqq|angmsdag|biguplus|curlyvee|trpezium|Succeeds|NotTilde|bigwedge|angmsdah|angrtvbd|triminus|cwconint|fpartint|lrcorner|smeparsl|subseteq|urcorner|lurdshar|laemptyv|DDotrahd|approxeq|ldrushar|awconint|mapstoup|backcong|shortmid|triangle|geqslant|gesdotol|timesbar|circledR|circledS|setminus|multimap|naturals|scpolint|ncongdot|RightTee|boxminus|gnapprox|boxtimes|andslope|thicksim|angmsdaa|varsigma|cirfnint|rtriltri|angmsdab|rppolint|angmsdac|barwedge|drbkarow|clubsuit|thetasym|bsolhsub|capbrcup|dzigrarr|doteqdot|DotEqual|dotminus|UnderBar|NotEqual|realpart|otimesas|ulcorner|hksearow|hkswarow|parallel|PartialD|elinters|emptyset|plusacir|bbrktbrk|angmsdad|pointint|bigoplus|angmsdae|Precedes|bigsqcup|varkappa|notindot|supseteq|precneqq|precnsim|profalar|profline|profsurf|leqslant|lesdotor|raemptyv|subplus|notnivb|notnivc|subrarr|zigrarr|vzigzag|submult|subedot|Element|between|cirscir|larrbfs|larrsim|lotimes|lbrksld|lbrkslu|lozenge|ldrdhar|dbkarow|bigcirc|epsilon|simrarr|simplus|ltquest|Epsilon|luruhar|gtquest|maltese|npolint|eqcolon|npreceq|bigodot|ddagger|gtrless|bnequiv|harrcir|ddotseq|equivDD|backsim|demptyv|nsqsube|nsqsupe|Upsilon|nsubset|upsilon|minusdu|nsucceq|swarrow|nsupset|coloneq|searrow|boxplus|napprox|natural|asympeq|alefsym|congdot|nearrow|bigstar|diamond|supplus|tritime|LeftTee|nvinfin|triplus|NewLine|nvltrie|nvrtrie|nwarrow|nexists|Diamond|ruluhar|Implies|supmult|angzarr|suplarr|suphsub|questeq|because|digamma|Because|olcross|bemptyv|omicron|Omicron|rotimes|NoBreak|intprod|angrtvb|orderof|uwangle|suphsol|lesdoto|orslope|DownTee|realine|cudarrl|rdldhar|OverBar|supedot|lessdot|supdsub|topfork|succsim|rbrkslu|rbrksld|pertenk|cudarrr|isindot|planckh|lessgtr|pluscir|gesdoto|plussim|plustwo|lesssim|cularrp|rarrsim|Cayleys|notinva|notinvb|notinvc|UpArrow|Uparrow|uparrow|NotLess|dwangle|precsim|Product|curarrm|Cconint|dotplus|rarrbfs|ccupssm|Cedilla|cemptyv|notniva|quatint|frac35|frac38|frac45|frac56|frac58|frac78|tridot|xoplus|gacute|gammad|Gammad|lfisht|lfloor|bigcup|sqsupe|gbreve|Gbreve|lharul|sqsube|sqcups|Gcedil|apacir|llhard|lmidot|Lmidot|lmoust|andand|sqcaps|approx|Abreve|spades|circeq|tprime|divide|topcir|Assign|topbot|gesdot|divonx|xuplus|timesd|gesles|atilde|solbar|SOFTcy|loplus|timesb|lowast|lowbar|dlcorn|dlcrop|softcy|dollar|lparlt|thksim|lrhard|Atilde|lsaquo|smashp|bigvee|thinsp|wreath|bkarow|lsquor|lstrok|Lstrok|lthree|ltimes|ltlarr|DotDot|simdot|ltrPar|weierp|xsqcup|angmsd|sigmav|sigmaf|zeetrf|Zcaron|zcaron|mapsto|vsupne|thetav|cirmid|marker|mcomma|Zacute|vsubnE|there4|gtlPar|vsubne|bottom|gtrarr|SHCHcy|shchcy|midast|midcir|middot|minusb|minusd|gtrdot|bowtie|sfrown|mnplus|models|colone|seswar|Colone|mstpos|searhk|gtrsim|nacute|Nacute|boxbox|telrec|hairsp|Tcedil|nbumpe|scnsim|ncaron|Ncaron|ncedil|Ncedil|hamilt|Scedil|nearhk|hardcy|HARDcy|tcedil|Tcaron|commat|nequiv|nesear|tcaron|target|hearts|nexist|varrho|scedil|Scaron|scaron|hellip|Sacute|sacute|hercon|swnwar|compfn|rtimes|rthree|rsquor|rsaquo|zacute|wedgeq|homtht|barvee|barwed|Barwed|rpargt|horbar|conint|swarhk|roplus|nltrie|hslash|hstrok|Hstrok|rmoust|Conint|bprime|hybull|hyphen|iacute|Iacute|supsup|supsub|supsim|varphi|coprod|brvbar|agrave|Supset|supset|igrave|Igrave|notinE|Agrave|iiiint|iinfin|copysr|wedbar|Verbar|vangrt|becaus|incare|verbar|inodot|bullet|drcorn|intcal|drcrop|cularr|vellip|Utilde|bumpeq|cupcap|dstrok|Dstrok|CupCap|cupcup|cupdot|eacute|Eacute|supdot|iquest|easter|ecaron|Ecaron|ecolon|isinsv|utilde|itilde|Itilde|curarr|succeq|Bumpeq|cacute|ulcrop|nparsl|Cacute|nprcue|egrave|Egrave|nrarrc|nrarrw|subsup|subsub|nrtrie|jsercy|nsccue|Jsercy|kappav|kcedil|Kcedil|subsim|ulcorn|nsimeq|egsdot|veebar|kgreen|capand|elsdot|Subset|subset|curren|aacute|lacute|Lacute|emptyv|ntilde|Ntilde|lagran|lambda|Lambda|capcap|Ugrave|langle|subdot|emsp13|numero|emsp14|nvdash|nvDash|nVdash|nVDash|ugrave|ufisht|nvHarr|larrfs|nvlArr|larrhk|larrlp|larrpl|nvrArr|Udblac|nwarhk|larrtl|nwnear|oacute|Oacute|latail|lAtail|sstarf|lbrace|odblac|Odblac|lbrack|udblac|odsold|eparsl|lcaron|Lcaron|ograve|Ograve|lcedil|Lcedil|Aacute|ssmile|ssetmn|squarf|ldquor|capcup|ominus|cylcty|rharul|eqcirc|dagger|rfloor|rfisht|Dagger|daleth|equals|origof|capdot|equest|dcaron|Dcaron|rdquor|oslash|Oslash|otilde|Otilde|otimes|Otimes|urcrop|Ubreve|ubreve|Yacute|Uacute|uacute|Rcedil|rcedil|urcorn|parsim|Rcaron|Vdashl|rcaron|Tstrok|percnt|period|permil|Exists|yacute|rbrack|rbrace|phmmat|ccaron|Ccaron|planck|ccedil|plankv|tstrok|female|plusdo|plusdu|ffilig|plusmn|ffllig|Ccedil|rAtail|dfisht|bernou|ratail|Rarrtl|rarrtl|angsph|rarrpl|rarrlp|rarrhk|xwedge|xotime|forall|ForAll|Vvdash|vsupnE|preceq|bigcap|frac12|frac13|frac14|primes|rarrfs|prnsim|frac15|Square|frac16|square|lesdot|frac18|frac23|propto|prurel|rarrap|rangle|puncsp|frac25|Racute|qprime|racute|lesges|frac34|abreve|AElig|eqsim|utdot|setmn|urtri|Equal|Uring|seArr|uring|searr|dashv|Dashv|mumap|nabla|iogon|Iogon|sdote|sdotb|scsim|napid|napos|equiv|natur|Acirc|dblac|erarr|nbump|iprod|erDot|ucirc|awint|esdot|angrt|ncong|isinE|scnap|Scirc|scirc|ndash|isins|Ubrcy|nearr|neArr|isinv|nedot|ubrcy|acute|Ycirc|iukcy|Iukcy|xutri|nesim|caret|jcirc|Jcirc|caron|twixt|ddarr|sccue|exist|jmath|sbquo|ngeqq|angst|ccaps|lceil|ngsim|UpTee|delta|Delta|rtrif|nharr|nhArr|nhpar|rtrie|jukcy|Jukcy|kappa|rsquo|Kappa|nlarr|nlArr|TSHcy|rrarr|aogon|Aogon|fflig|xrarr|tshcy|ccirc|nleqq|filig|upsih|nless|dharl|nlsim|fjlig|ropar|nltri|dharr|robrk|roarr|fllig|fltns|roang|rnmid|subnE|subne|lAarr|trisb|Ccirc|acirc|ccups|blank|VDash|forkv|Vdash|langd|cedil|blk12|blk14|laquo|strns|diams|notin|vDash|larrb|blk34|block|disin|uplus|vdash|vBarv|aelig|starf|Wedge|check|xrArr|lates|lbarr|lBarr|notni|lbbrk|bcong|frasl|lbrke|frown|vrtri|vprop|vnsup|gamma|Gamma|wedge|xodot|bdquo|srarr|doteq|ldquo|boxdl|boxdL|gcirc|Gcirc|boxDl|boxDL|boxdr|boxdR|boxDr|TRADE|trade|rlhar|boxDR|vnsub|npart|vltri|rlarr|boxhd|boxhD|nprec|gescc|nrarr|nrArr|boxHd|boxHD|boxhu|boxhU|nrtri|boxHu|clubs|boxHU|times|colon|Colon|gimel|xlArr|Tilde|nsime|tilde|nsmid|nspar|THORN|thorn|xlarr|nsube|nsubE|thkap|xhArr|comma|nsucc|boxul|boxuL|nsupe|nsupE|gneqq|gnsim|boxUl|boxUL|grave|boxur|boxuR|boxUr|boxUR|lescc|angle|bepsi|boxvh|varpi|boxvH|numsp|Theta|gsime|gsiml|theta|boxVh|boxVH|boxvl|gtcir|gtdot|boxvL|boxVl|boxVL|crarr|cross|Cross|nvsim|boxvr|nwarr|nwArr|sqsup|dtdot|Uogon|lhard|lharu|dtrif|ocirc|Ocirc|lhblk|duarr|odash|sqsub|Hacek|sqcup|llarr|duhar|oelig|OElig|ofcir|boxvR|uogon|lltri|boxVr|csube|uuarr|ohbar|csupe|ctdot|olarr|olcir|harrw|oline|sqcap|omacr|Omacr|omega|Omega|boxVR|aleph|lneqq|lnsim|loang|loarr|rharu|lobrk|hcirc|operp|oplus|rhard|Hcirc|orarr|Union|order|ecirc|Ecirc|cuepr|szlig|cuesc|breve|reals|eDDot|Breve|hoarr|lopar|utrif|rdquo|Umacr|umacr|efDot|swArr|ultri|alpha|rceil|ovbar|swarr|Wcirc|wcirc|smtes|smile|bsemi|lrarr|aring|parsl|lrhar|bsime|uhblk|lrtri|cupor|Aring|uharr|uharl|slarr|rbrke|bsolb|lsime|rbbrk|RBarr|lsimg|phone|rBarr|rbarr|icirc|lsquo|Icirc|emacr|Emacr|ratio|simne|plusb|simlE|simgE|simeq|pluse|ltcir|ltdot|empty|xharr|xdtri|iexcl|Alpha|ltrie|rarrw|pound|ltrif|xcirc|bumpe|prcue|bumpE|asymp|amacr|cuvee|Sigma|sigma|iiint|udhar|iiota|ijlig|IJlig|supnE|imacr|Imacr|prime|Prime|image|prnap|eogon|Eogon|rarrc|mdash|mDDot|cuwed|imath|supne|imped|Amacr|udarr|prsim|micro|rarrb|cwint|raquo|infin|eplus|range|rangd|Ucirc|radic|minus|amalg|veeeq|rAarr|epsiv|ycirc|quest|sharp|quot|zwnj|Qscr|race|qscr|Qopf|qopf|qint|rang|Rang|Zscr|zscr|Zopf|zopf|rarr|rArr|Rarr|Pscr|pscr|prop|prod|prnE|prec|ZHcy|zhcy|prap|Zeta|zeta|Popf|popf|Zdot|plus|zdot|Yuml|yuml|phiv|YUcy|yucy|Yscr|yscr|perp|Yopf|yopf|part|para|YIcy|Ouml|rcub|yicy|YAcy|rdca|ouml|osol|Oscr|rdsh|yacy|real|oscr|xvee|andd|rect|andv|Xscr|oror|ordm|ordf|xscr|ange|aopf|Aopf|rHar|Xopf|opar|Oopf|xopf|xnis|rhov|oopf|omid|xmap|oint|apid|apos|ogon|ascr|Ascr|odot|odiv|xcup|xcap|ocir|oast|nvlt|nvle|nvgt|nvge|nvap|Wscr|wscr|auml|ntlg|ntgl|nsup|nsub|nsim|Nscr|nscr|nsce|Wopf|ring|npre|wopf|npar|Auml|Barv|bbrk|Nopf|nopf|nmid|nLtv|beta|ropf|Ropf|Beta|beth|nles|rpar|nleq|bnot|bNot|nldr|NJcy|rscr|Rscr|Vscr|vscr|rsqb|njcy|bopf|nisd|Bopf|rtri|Vopf|nGtv|ngtr|vopf|boxh|boxH|boxv|nges|ngeq|boxV|bscr|scap|Bscr|bsim|Vert|vert|bsol|bull|bump|caps|cdot|ncup|scnE|ncap|nbsp|napE|Cdot|cent|sdot|Vbar|nang|vBar|chcy|Mscr|mscr|sect|semi|CHcy|Mopf|mopf|sext|circ|cire|mldr|mlcp|cirE|comp|shcy|SHcy|vArr|varr|cong|copf|Copf|copy|COPY|malt|male|macr|lvnE|cscr|ltri|sime|ltcc|simg|Cscr|siml|csub|Uuml|lsqb|lsim|uuml|csup|Lscr|lscr|utri|smid|lpar|cups|smte|lozf|darr|Lopf|Uscr|solb|lopf|sopf|Sopf|lneq|uscr|spar|dArr|lnap|Darr|dash|Sqrt|LJcy|ljcy|lHar|dHar|Upsi|upsi|diam|lesg|djcy|DJcy|leqq|dopf|Dopf|dscr|Dscr|dscy|ldsh|ldca|squf|DScy|sscr|Sscr|dsol|lcub|late|star|Star|Uopf|Larr|lArr|larr|uopf|dtri|dzcy|sube|subE|Lang|lang|Kscr|kscr|Kopf|kopf|KJcy|kjcy|KHcy|khcy|DZcy|ecir|edot|eDot|Jscr|jscr|succ|Jopf|jopf|Edot|uHar|emsp|ensp|Iuml|iuml|eopf|isin|Iscr|iscr|Eopf|epar|sung|epsi|escr|sup1|sup2|sup3|Iota|iota|supe|supE|Iopf|iopf|IOcy|iocy|Escr|esim|Esim|imof|Uarr|QUOT|uArr|uarr|euml|IEcy|iecy|Idot|Euml|euro|excl|Hscr|hscr|Hopf|hopf|TScy|tscy|Tscr|hbar|tscr|flat|tbrk|fnof|hArr|harr|half|fopf|Fopf|tdot|gvnE|fork|trie|gtcc|fscr|Fscr|gdot|gsim|Gscr|gscr|Gopf|gopf|gneq|Gdot|tosa|gnap|Topf|topf|geqq|toea|GJcy|gjcy|tint|gesl|mid|Sfr|ggg|top|ges|gla|glE|glj|geq|gne|gEl|gel|gnE|Gcy|gcy|gap|Tfr|tfr|Tcy|tcy|Hat|Tau|Ffr|tau|Tab|hfr|Hfr|ffr|Fcy|fcy|icy|Icy|iff|ETH|eth|ifr|Ifr|Eta|eta|int|Int|Sup|sup|ucy|Ucy|Sum|sum|jcy|ENG|ufr|Ufr|eng|Jcy|jfr|els|ell|egs|Efr|efr|Jfr|uml|kcy|Kcy|Ecy|ecy|kfr|Kfr|lap|Sub|sub|lat|lcy|Lcy|leg|Dot|dot|lEg|leq|les|squ|div|die|lfr|Lfr|lgE|Dfr|dfr|Del|deg|Dcy|dcy|lne|lnE|sol|loz|smt|Cup|lrm|cup|lsh|Lsh|sim|shy|map|Map|mcy|Mcy|mfr|Mfr|mho|gfr|Gfr|sfr|cir|Chi|chi|nap|Cfr|vcy|Vcy|cfr|Scy|scy|ncy|Ncy|vee|Vee|Cap|cap|nfr|scE|sce|Nfr|nge|ngE|nGg|vfr|Vfr|ngt|bot|nGt|nis|niv|Rsh|rsh|nle|nlE|bne|Bfr|bfr|nLl|nlt|nLt|Bcy|bcy|not|Not|rlm|wfr|Wfr|npr|nsc|num|ocy|ast|Ocy|ofr|xfr|Xfr|Ofr|ogt|ohm|apE|olt|Rho|ape|rho|Rfr|rfr|ord|REG|ang|reg|orv|And|and|AMP|Rcy|amp|Afr|ycy|Ycy|yen|yfr|Yfr|rcy|par|pcy|Pcy|pfr|Pfr|phi|Phi|afr|Acy|acy|zcy|Zcy|piv|acE|acd|zfr|Zfr|pre|prE|psi|Psi|qfr|Qfr|zwj|Or|ge|Gg|gt|gg|el|oS|lt|Lt|LT|Re|lg|gl|eg|ne|Im|it|le|DD|wp|wr|nu|Nu|dd|lE|Sc|sc|pi|Pi|ee|af|ll|Ll|rx|gE|xi|pm|Xi|ic|pr|Pr|in|ni|mp|mu|ac|Mu|or|ap|Gt|GT|ii);|&(Aacute|Agrave|Atilde|Ccedil|Eacute|Egrave|Iacute|Igrave|Ntilde|Oacute|Ograve|Oslash|Otilde|Uacute|Ugrave|Yacute|aacute|agrave|atilde|brvbar|ccedil|curren|divide|eacute|egrave|frac12|frac14|frac34|iacute|igrave|iquest|middot|ntilde|oacute|ograve|oslash|otilde|plusmn|uacute|ugrave|yacute|AElig|Acirc|Aring|Ecirc|Icirc|Ocirc|THORN|Ucirc|acirc|acute|aelig|aring|cedil|ecirc|icirc|iexcl|laquo|micro|ocirc|pound|raquo|szlig|thorn|times|ucirc|Auml|COPY|Euml|Iuml|Ouml|QUOT|Uuml|auml|cent|copy|euml|iuml|macr|nbsp|ordf|ordm|ouml|para|quot|sect|sup1|sup2|sup3|uuml|yuml|AMP|ETH|REG|amp|deg|eth|not|reg|shy|uml|yen|GT|LT|gt|lt)(?!;)([=a-zA-Z0-9]?)|&#([0-9]+)(;?)|&#[xX]([a-fA-F0-9]+)(;?)|&([0-9a-zA-Z]+)/g;
+/*
             var decodeMap = {
                 aacute: '\xE1',
                 Aacute: '\xC1',
@@ -6393,6 +6427,7 @@
                 zwj: '\u200D',
                 zwnj: '\u200C'
             };
+*/
             var decodeMapLegacy = {
                 aacute: '\xE1',
                 Aacute: '\xC1',
@@ -6501,35 +6536,37 @@
                 yen: '\xA5',
                 yuml: '\xFF'
             };
+            // workaround Limit for quota 'api.jsObjectSize' exceeded. Limit is 2000, actual is 2001
+            var decodeMap = decodeMapLegacy;
             var decodeMapNumeric = {
-                '0': '\uFFFD',
-                '128': '\u20AC',
-                '130': '\u201A',
-                '131': '\u0192',
-                '132': '\u201E',
-                '133': '\u2026',
-                '134': '\u2020',
-                '135': '\u2021',
-                '136': '\u02C6',
-                '137': '\u2030',
-                '138': '\u0160',
-                '139': '\u2039',
-                '140': '\u0152',
-                '142': '\u017D',
-                '145': '\u2018',
-                '146': '\u2019',
-                '147': '\u201C',
-                '148': '\u201D',
-                '149': '\u2022',
-                '150': '\u2013',
-                '151': '\u2014',
-                '152': '\u02DC',
-                '153': '\u2122',
-                '154': '\u0161',
-                '155': '\u203A',
-                '156': '\u0153',
-                '158': '\u017E',
-                '159': '\u0178'
+                0: '\uFFFD',
+                128: '\u20AC',
+                130: '\u201A',
+                131: '\u0192',
+                132: '\u201E',
+                133: '\u2026',
+                134: '\u2020',
+                135: '\u2021',
+                136: '\u02C6',
+                137: '\u2030',
+                138: '\u0160',
+                139: '\u2039',
+                140: '\u0152',
+                142: '\u017D',
+                145: '\u2018',
+                146: '\u2019',
+                147: '\u201C',
+                148: '\u201D',
+                149: '\u2022',
+                150: '\u2013',
+                151: '\u2014',
+                152: '\u02DC',
+                153: '\u2122',
+                154: '\u0161',
+                155: '\u203A',
+                156: '\u0153',
+                158: '\u017E',
+                159: '\u0178'
             };
             var invalidReferenceCodePoints = [
                 1,
@@ -6759,7 +6796,7 @@
                 };
 
                 if (encodeEverything) {
-                    string = string.replace(regexAsciiWhitelist, function(symbol) {
+                    string = string.replace(regexAsciiWhitelist, function (symbol) {
                         if (useNamedReferences && has(encodeMap, symbol)) {
                             return '&' + encodeMap[symbol] + ';';
                         }
@@ -6775,19 +6812,19 @@
                     }
 
                     if (useNamedReferences) {
-                        string = string.replace(regexEncodeNonAscii, function(string) {
+                        string = string.replace(regexEncodeNonAscii, function (string) {
                             return '&' + encodeMap[string] + ';';
                         });
                     }
                 } else if (useNamedReferences) {
                     if (!allowUnsafeSymbols) {
-                        string = string.replace(regexEscape, function(string) {
+                        string = string.replace(regexEscape, function (string) {
                             return '&' + encodeMap[string] + ';';
                         });
                     }
 
                     string = string.replace(/&gt;\u20D2/g, '&nvgt;').replace(/&lt;\u20D2/g, '&nvlt;');
-                    string = string.replace(regexEncodeNonAscii, function(string) {
+                    string = string.replace(regexEncodeNonAscii, function (string) {
                         return '&' + encodeMap[string] + ';';
                     });
                 } else if (!allowUnsafeSymbols) {
@@ -6795,7 +6832,7 @@
                 }
 
                 return string
-                    .replace(regexAstralSymbols, function($0) {
+                    .replace(regexAstralSymbols, function ($0) {
                         var high = $0.charCodeAt(0);
                         var low = $0.charCodeAt(1);
                         var codePoint = (high - 0xd800) * 0x400 + low - 0xdc00 + 0x10000;
@@ -6820,7 +6857,7 @@
                     parseError('malformed character reference');
                 }
 
-                return html.replace(regexDecode, function($0, $1, $2, $3, $4, $5, $6, $7, $8) {
+                return html.replace(regexDecode, function ($0, $1, $2, $3, $4, $5, $6, $7, $8) {
                     var codePoint;
                     var semicolon;
                     var decDigits;
@@ -6843,13 +6880,12 @@
                             }
 
                             return $0;
-                        } else {
-                            if (strict) {
-                                parseError('named character reference was not terminated by a semicolon');
-                            }
-
-                            return decodeMapLegacy[reference] + (next || '');
                         }
+                        if (strict) {
+                            parseError('named character reference was not terminated by a semicolon');
+                        }
+
+                        return decodeMapLegacy[reference] + (next || '');
                     }
 
                     if ($4) {
@@ -6890,7 +6926,7 @@
             };
 
             var escape = function escape(string) {
-                return string.replace(regexEscape, function($0) {
+                return string.replace(regexEscape, function ($0) {
                     return escapeMap[$0];
                 });
             };
@@ -6914,7 +6950,7 @@
             } else {
                 root.he = he;
             }
-        })(commonjsGlobal);
+        }(commonjsGlobal));
     });
     var attribute = /^\s*([^\s"'<>\/=]+)(?:\s*(=)\s*(?:"([^"]*)"+|'([^']*)'+|([^\s"'=<>`]+)))?/;
     var dynamicArgAttribute = /^\s*((?:v-[\w-]+:|@|:|#)\[[^=]+\][^\s"'<>\/=]*)(?:\s*(=)\s*(?:"([^"]*)"+|'([^']*)'+|([^\s"'=<>`]+)))?/;
@@ -6947,7 +6983,7 @@
 
     function decodeAttr(value, shouldDecodeNewlines) {
         var re = shouldDecodeNewlines ? encodedAttrWithNewLines : encodedAttr;
-        return value.replace(re, function(match) {
+        return value.replace(re, function (match) {
             return decodingMap[match];
         });
     }
@@ -6958,7 +6994,8 @@
         var isUnaryTag$$1 = options.isUnaryTag || no;
         var canBeLeftOpenTag$$1 = options.canBeLeftOpenTag || no;
         var index = 0;
-        var last, lastTag;
+        var last,
+            lastTag;
 
         while (html) {
             last = html;
@@ -7061,7 +7098,7 @@
                 var reStackedTag =
                     reCache[stackedTag] ||
                     (reCache[stackedTag] = new RegExp('([\\s\\S]*?)(</' + stackedTag + '[^>]*>)', 'i'));
-                var rest$1 = html.replace(reStackedTag, function(all, text, endTag) {
+                var rest$1 = html.replace(reStackedTag, function (all, text, endTag) {
                     endTagLength = endTag.length;
 
                     if (!isPlainTextElement(stackedTag) && stackedTag !== 'noscript') {
@@ -7113,7 +7150,8 @@
                     start: index
                 };
                 advance(start[0].length);
-                var end, attr;
+                var end,
+                    attr;
 
                 while (
                     !(end = html.match(startTagClose)) &&
@@ -7187,7 +7225,8 @@
         }
 
         function parseEndTag(tagName, start, end) {
-            var pos, lowerCasedTagName;
+            var pos,
+                lowerCasedTagName;
 
             if (start == null) {
                 start = index;
@@ -7278,12 +7317,16 @@
 
         if (res.key === null) {
             return value + '=' + assignment;
-        } else {
-            return '$set(' + res.exp + ', ' + res.key + ', ' + assignment + ')';
         }
+        return '$set(' + res.exp + ', ' + res.key + ', ' + assignment + ')';
     }
 
-    var len, str, chr, index, expressionPos, expressionEndPos;
+    var len,
+        str,
+        chr,
+        index,
+        expressionPos,
+        expressionEndPos;
 
     function parseModel(val) {
         val = val.trim();
@@ -7297,12 +7340,11 @@
                     exp: val.slice(0, index),
                     key: '"' + val.slice(index + 1) + '"'
                 };
-            } else {
-                return {
-                    exp: val,
-                    key: null
-                };
             }
+            return {
+                exp: val,
+                key: null
+            };
         }
 
         str = val;
@@ -7451,7 +7493,7 @@
             }
 
             if (!stack.length && element !== root) {
-                if (root['if'] && (element.elseif || element['else'])) {
+                if (root.if && (element.elseif || element.else)) {
                     {
                         checkRootConstraints(element);
                     }
@@ -7472,7 +7514,7 @@
             }
 
             if (currentParent && !element.forbidden) {
-                if (element.elseif || element['else']) {
+                if (element.elseif || element.else) {
                     processIfConditions(element, currentParent);
                 } else {
                     if (element.slotScope) {
@@ -7485,7 +7527,7 @@
                 }
             }
 
-            element.children = element.children.filter(function(c) {
+            element.children = element.children.filter(function (c) {
                 return !c.slotScope;
             });
             trimEndingWhitespace(element);
@@ -7561,13 +7603,13 @@
                     if (options.outputSourceRange) {
                         element.start = start$1;
                         element.end = end;
-                        element.rawAttrsMap = element.attrsList.reduce(function(cumulated, attr) {
+                        element.rawAttrsMap = element.attrsList.reduce(function (cumulated, attr) {
                             cumulated[attr.name] = attr;
                             return cumulated;
                         }, {});
                     }
 
-                    attrs.forEach(function(attr) {
+                    attrs.forEach(function (attr) {
                         if (invalidAttributeRE.test(attr.name)) {
                             warn$1(
                                 'Invalid dynamic argument expression: attribute names cannot contain ' +
@@ -7790,7 +7832,7 @@
                     );
                 }
 
-                if (el['for']) {
+                if (el.for) {
                     var iterator = el.iterator2 || el.iterator1;
                     var parent = el.parent;
 
@@ -7839,7 +7881,7 @@
         }
 
         var res = {};
-        res['for'] = inMatch[2].trim();
+        res.for = inMatch[2].trim();
         var alias = inMatch[1].trim().replace(stripParensRE, '');
         var iteratorMatch = alias.match(forIteratorRE);
 
@@ -7861,14 +7903,14 @@
         var exp = getAndRemoveAttr(el, 'v-if');
 
         if (exp) {
-            el['if'] = exp;
+            el.if = exp;
             addIfCondition(el, {
                 exp: exp,
                 block: el
             });
         } else {
             if (getAndRemoveAttr(el, 'v-else') != null) {
-                el['else'] = true;
+                el.else = true;
             }
 
             var elseif = getAndRemoveAttr(el, 'v-else-if');
@@ -7882,7 +7924,7 @@
     function processIfConditions(el, parent) {
         var prev = findPrevElement(parent.children);
 
-        if (prev && prev['if']) {
+        if (prev && prev.if) {
             addIfCondition(prev, {
                 exp: el.elseif,
                 block: el
@@ -7906,16 +7948,15 @@
         while (i--) {
             if (children[i].type === 1) {
                 return children[i];
-            } else {
-                if (children[i].text !== ' ') {
-                    warn$1(
+            }
+            if (children[i].text !== ' ') {
+                warn$1(
                         'text "' + children[i].text.trim() + '" between v-if and v-else(-if) ' + 'will be ignored.',
                         children[i]
                     );
-                }
-
-                children.pop();
             }
+
+            children.pop();
         }
     }
 
@@ -7947,7 +7988,7 @@
                         'replaced by "slot-scope" since 2.5. The new "slot-scope" attribute ' +
                         'can also be used on plain elements in addition to <template> to ' +
                         'denote scoped slots.',
-                    el.rawAttrsMap['scope'],
+                    el.rawAttrsMap.scope,
                     true
                 );
             }
@@ -8033,7 +8074,7 @@
                     var slotContainer = (slots[name$1] = createASTElement('template', [], el));
                     slotContainer.slotTarget = name$1;
                     slotContainer.slotTargetDynamic = dynamic$1;
-                    slotContainer.children = el.children.filter(function(c) {
+                    slotContainer.children = el.children.filter(function (c) {
                         if (!c.slotScope) {
                             c.parent = slotContainer;
                             return true;
@@ -8060,13 +8101,13 @@
 
         return dynamicArgRE.test(name)
             ? {
-                  name: name.slice(1, -1),
-                  dynamic: true
-              }
+                name: name.slice(1, -1),
+                dynamic: true
+            }
             : {
-                  name: '"' + name + '"',
-                  dynamic: false
-              };
+                name: '"' + name + '"',
+                dynamic: false
+            };
     }
 
     function processSlotOutlet(el) {
@@ -8098,7 +8139,14 @@
 
     function processAttrs(el) {
         var list = el.attrsList;
-        var i, l, name, rawName, value, modifiers, syncGen, isDynamic;
+        var i,
+            l,
+            name,
+            rawName,
+            value,
+            modifiers,
+            syncGen,
+            isDynamic;
 
         for (i = 0, l = list.length; i < l; i++) {
             name = rawName = list[i].name;
@@ -8221,7 +8269,7 @@
         var parent = el;
 
         while (parent) {
-            if (parent['for'] !== undefined) {
+            if (parent.for !== undefined) {
                 return true;
             }
 
@@ -8236,7 +8284,7 @@
 
         if (match) {
             var ret = {};
-            match.forEach(function(m) {
+            match.forEach(function (m) {
                 ret[m.slice(1)] = true;
             });
             return ret;
@@ -8289,7 +8337,7 @@
         var _el = el;
 
         while (_el) {
-            if (_el['for'] && _el.alias === value) {
+            if (_el.for && _el.alias === value) {
                 warn$1(
                     '<' +
                         el.tag +
@@ -8336,9 +8384,9 @@
                 addRawAttr(branch0, 'type', 'checkbox');
                 processElement(branch0, options);
                 branch0.processed = true;
-                branch0['if'] = '(' + typeBinding + ")==='checkbox'" + ifConditionExtra;
+                branch0.if = '(' + typeBinding + ")==='checkbox'" + ifConditionExtra;
                 addIfCondition(branch0, {
-                    exp: branch0['if'],
+                    exp: branch0.if,
                     block: branch0
                 });
                 var branch1 = cloneASTElement(el);
@@ -8359,7 +8407,7 @@
                 });
 
                 if (hasElse) {
-                    branch0['else'] = true;
+                    branch0.else = true;
                 } else if (elseIfCondition) {
                     branch0.elseif = elseIfCondition;
                 }
@@ -8630,9 +8678,8 @@
 
         if (dynamicHandlers) {
             return prefix + '_d(' + staticHandlers + ',[' + dynamicHandlers.slice(0, -1) + '])';
-        } else {
-            return prefix + staticHandlers;
         }
+        return prefix + staticHandlers;
     }
 
     function genHandler(handler) {
@@ -8644,7 +8691,7 @@
             return (
                 '[' +
                 handler
-                    .map(function(handler) {
+                    .map(function (handler) {
                         return genHandler(handler);
                     })
                     .join(',') +
@@ -8662,52 +8709,51 @@
             }
 
             return 'function($event){' + (isFunctionInvocation ? 'return ' + handler.value : handler.value) + '}';
-        } else {
-            var code = '';
-            var genModifierCode = '';
-            var keys = [];
+        }
+        var code = '';
+        var genModifierCode = '';
+        var keys = [];
 
-            for (var key in handler.modifiers) {
-                if (modifierCode[key]) {
-                    genModifierCode += modifierCode[key];
+        for (var key in handler.modifiers) {
+            if (modifierCode[key]) {
+                genModifierCode += modifierCode[key];
 
-                    if (keyCodes[key]) {
-                        keys.push(key);
-                    }
-                } else if (key === 'exact') {
-                    var modifiers = handler.modifiers;
-                    genModifierCode += genGuard(
+                if (keyCodes[key]) {
+                    keys.push(key);
+                }
+            } else if (key === 'exact') {
+                var modifiers = handler.modifiers;
+                genModifierCode += genGuard(
                         ['ctrl', 'shift', 'alt', 'meta']
-                            .filter(function(keyModifier) {
+                            .filter(function (keyModifier) {
                                 return !modifiers[keyModifier];
                             })
-                            .map(function(keyModifier) {
+                            .map(function (keyModifier) {
                                 return '$event.' + keyModifier + 'Key';
                             })
                             .join('||')
                     );
-                } else {
-                    keys.push(key);
-                }
+            } else {
+                keys.push(key);
             }
+        }
 
-            if (keys.length) {
-                code += genKeyFilter(keys);
-            }
+        if (keys.length) {
+            code += genKeyFilter(keys);
+        }
 
-            if (genModifierCode) {
-                code += genModifierCode;
-            }
+        if (genModifierCode) {
+            code += genModifierCode;
+        }
 
-            var handlerCode = isMethodPath
+        var handlerCode = isMethodPath
                 ? 'return ' + handler.value + '($event)'
                 : isFunctionExpression
                 ? 'return (' + handler.value + ')($event)'
                 : isFunctionInvocation
                 ? 'return ' + handler.value
                 : handler.value;
-            return 'function($event){' + code + handlerCode + '}';
-        }
+        return 'function($event){' + code + handlerCode + '}';
     }
 
     function genKeyFilter(keys) {
@@ -8741,13 +8787,13 @@
             warn('v-on without argument does not support modifiers.');
         }
 
-        el.wrapListeners = function(code) {
+        el.wrapListeners = function (code) {
             return '_g(' + code + ',' + dir.value + ')';
         };
     }
 
     function bind$1(el, dir) {
-        el.wrapData = function(code) {
+        el.wrapData = function (code) {
             return (
                 '_b(' +
                 code +
@@ -8777,7 +8823,7 @@
         this.directives = extend(extend({}, baseDirectives), options.directives);
         var isReservedTag = options.isReservedTag || no;
 
-        this.maybeComponent = function(el) {
+        this.maybeComponent = function (el) {
             return !!el.component || !isReservedTag(el.tag);
         };
 
@@ -8804,36 +8850,35 @@
             return genStatic(el, state);
         } else if (el.once && !el.onceProcessed) {
             return genOnce(el, state);
-        } else if (el['for'] && !el.forProcessed) {
+        } else if (el.for && !el.forProcessed) {
             return genFor(el, state);
-        } else if (el['if'] && !el.ifProcessed) {
+        } else if (el.if && !el.ifProcessed) {
             return genIf(el, state);
         } else if (el.tag === 'template' && !el.slotTarget && !state.pre) {
             return genChildren(el, state) || 'void 0';
         } else if (el.tag === 'slot') {
             return genSlot(el, state);
-        } else {
-            var code;
-
-            if (el.component) {
-                code = genComponent(el.component, el, state);
-            } else {
-                var data;
-
-                if (!el.plain || (el.pre && state.maybeComponent(el))) {
-                    data = genData$2(el, state);
-                }
-
-                var children = el.inlineTemplate ? null : genChildren(el, state, true);
-                code = "_c('" + el.tag + "'" + (data ? ',' + data : '') + (children ? ',' + children : '') + ')';
-            }
-
-            for (var i = 0; i < state.transforms.length; i++) {
-                code = state.transforms[i](el, code);
-            }
-
-            return code;
         }
+        var code;
+
+        if (el.component) {
+            code = genComponent(el.component, el, state);
+        } else {
+            var data;
+
+            if (!el.plain || (el.pre && state.maybeComponent(el))) {
+                data = genData$2(el, state);
+            }
+
+            var children = el.inlineTemplate ? null : genChildren(el, state, true);
+            code = "_c('" + el.tag + "'" + (data ? ',' + data : '') + (children ? ',' + children : '') + ')';
+        }
+
+        for (var i = 0; i < state.transforms.length; i++) {
+            code = state.transforms[i](el, code);
+        }
+
+        return code;
     }
 
     function genStatic(el, state) {
@@ -8852,14 +8897,14 @@
     function genOnce(el, state) {
         el.onceProcessed = true;
 
-        if (el['if'] && !el.ifProcessed) {
+        if (el.if && !el.ifProcessed) {
             return genIf(el, state);
         } else if (el.staticInFor) {
             var key = '';
             var parent = el.parent;
 
             while (parent) {
-                if (parent['for']) {
+                if (parent.for) {
                     key = parent.key;
                     break;
                 }
@@ -8873,9 +8918,8 @@
             }
 
             return '_o(' + genElement(el, state) + ',' + state.onceId++ + ',' + key + ')';
-        } else {
-            return genStatic(el, state);
         }
+        return genStatic(el, state);
     }
 
     function genIf(el, state, altGen, altEmpty) {
@@ -8899,9 +8943,9 @@
                 ':' +
                 genIfConditions(conditions, state, altGen, altEmpty)
             );
-        } else {
-            return '' + genTernaryExp(condition.block);
         }
+        return '' + genTernaryExp(condition.block);
+
 
         function genTernaryExp(el) {
             return altGen ? altGen(el, state) : el.once ? genOnce(el, state) : genElement(el, state);
@@ -8909,7 +8953,7 @@
     }
 
     function genFor(el, state, altGen, altHelper) {
-        var exp = el['for'];
+        var exp = el.for;
         var alias = el.alias;
         var iterator1 = el.iterator1 ? ',' + el.iterator1 : '';
         var iterator2 = el.iterator2 ? ',' + el.iterator2 : '';
@@ -9048,7 +9092,10 @@
 
         var res = 'directives:[';
         var hasRuntime = false;
-        var i, l, dir, needRuntime;
+        var i,
+            l,
+            dir,
+            needRuntime;
 
         for (i = 0, l = dirs.length; i < l; i++) {
             dir = dirs[i];
@@ -9095,7 +9142,7 @@
                 inlineRenderFns.render +
                 '},staticRenderFns:[' +
                 inlineRenderFns.staticRenderFns
-                    .map(function(code) {
+                    .map(function (code) {
                         return 'function(){' + code + '}';
                     })
                     .join(',') +
@@ -9106,23 +9153,23 @@
 
     function genScopedSlots(el, slots, state) {
         var needsForceUpdate =
-            el['for'] ||
-            Object.keys(slots).some(function(key) {
+            el.for ||
+            Object.keys(slots).some(function (key) {
                 var slot = slots[key];
-                return slot.slotTargetDynamic || slot['if'] || slot['for'] || containsSlotChild(slot);
+                return slot.slotTargetDynamic || slot.if || slot.for || containsSlotChild(slot);
             });
-        var needsKey = !!el['if'];
+        var needsKey = !!el.if;
 
         if (!needsForceUpdate) {
             var parent = el.parent;
 
             while (parent) {
-                if ((parent.slotScope && parent.slotScope !== emptySlotScopeToken) || parent['for']) {
+                if ((parent.slotScope && parent.slotScope !== emptySlotScopeToken) || parent.for) {
                     needsForceUpdate = true;
                     break;
                 }
 
-                if (parent['if']) {
+                if (parent.if) {
                     needsKey = true;
                 }
 
@@ -9131,7 +9178,7 @@
         }
 
         var generatedSlots = Object.keys(slots)
-            .map(function(key) {
+            .map(function (key) {
                 return genScopedSlot(slots[key], state);
             })
             .join(',');
@@ -9171,11 +9218,11 @@
     function genScopedSlot(el, state) {
         var isLegacySyntax = el.attrsMap['slot-scope'];
 
-        if (el['if'] && !el.ifProcessed && !isLegacySyntax) {
+        if (el.if && !el.ifProcessed && !isLegacySyntax) {
             return genIf(el, state, genScopedSlot, 'null');
         }
 
-        if (el['for'] && !el.forProcessed) {
+        if (el.for && !el.forProcessed) {
             return genFor(el, state, genScopedSlot);
         }
 
@@ -9186,8 +9233,8 @@
             '){' +
             'return ' +
             (el.tag === 'template'
-                ? el['if'] && isLegacySyntax
-                    ? '(' + el['if'] + ')?' + (genChildren(el, state) || 'undefined') + ':undefined'
+                ? el.if && isLegacySyntax
+                    ? '(' + el.if + ')?' + (genChildren(el, state) || 'undefined') + ':undefined'
                     : genChildren(el, state) || 'undefined'
                 : genElement(el, state)) +
             '}';
@@ -9201,7 +9248,7 @@
         if (children.length) {
             var el$1 = children[0];
 
-            if (children.length === 1 && el$1['for'] && el$1.tag !== 'template' && el$1.tag !== 'slot') {
+            if (children.length === 1 && el$1.for && el$1.tag !== 'template' && el$1.tag !== 'slot') {
                 var normalizationType = checkSkip ? (state.maybeComponent(el$1) ? ',1' : ',0') : '';
                 return '' + (altGenElement || genElement)(el$1, state) + normalizationType;
             }
@@ -9211,7 +9258,7 @@
             return (
                 '[' +
                 children
-                    .map(function(c) {
+                    .map(function (c) {
                         return gen(c, state);
                     })
                     .join(',') +
@@ -9234,7 +9281,7 @@
             if (
                 needsNormalization(el) ||
                 (el.ifConditions &&
-                    el.ifConditions.some(function(c) {
+                    el.ifConditions.some(function (c) {
                         return needsNormalization(c.block);
                     }))
             ) {
@@ -9245,7 +9292,7 @@
             if (
                 maybeComponent(el) ||
                 (el.ifConditions &&
-                    el.ifConditions.some(function(c) {
+                    el.ifConditions.some(function (c) {
                         return maybeComponent(c.block);
                     }))
             ) {
@@ -9257,7 +9304,7 @@
     }
 
     function needsNormalization(el) {
-        return el['for'] !== undefined || el.tag === 'template' || el.tag === 'slot';
+        return el.for !== undefined || el.tag === 'template' || el.tag === 'slot';
     }
 
     function genNode(node, state) {
@@ -9265,9 +9312,8 @@
             return genElement(node, state);
         } else if (node.type === 3 && node.isComment) {
             return genComment(node);
-        } else {
-            return genText(node);
         }
+        return genText(node);
     }
 
     function genText(text) {
@@ -9285,7 +9331,7 @@
         var attrs =
             el.attrs || el.dynamicAttrs
                 ? genProps(
-                      (el.attrs || []).concat(el.dynamicAttrs || []).map(function(attr) {
+                      (el.attrs || []).concat(el.dynamicAttrs || []).map(function (attr) {
                           return {
                               name: camelize(attr.name),
                               value: attr.value,
@@ -9335,9 +9381,8 @@
 
         if (dynamicProps) {
             return '_d(' + staticProps + ',[' + dynamicProps.slice(0, -1) + '])';
-        } else {
-            return staticProps;
         }
+        return staticProps;
     }
 
     function transformSpecialNewlines(text) {
@@ -9355,7 +9400,7 @@
                     state.directives.model(el, dir, state.warn);
 
                     if (el.tag === 'textarea' && el.props) {
-                        el.props = el.props.filter(function(p) {
+                        el.props = el.props.filter(function (p) {
                             return p.name !== 'value';
                         });
                     }
@@ -9367,7 +9412,7 @@
     }
 
     function genAttrSegments(attrs) {
-        return attrs.map(function(ref) {
+        return attrs.map(function (ref) {
             var name = ref.name;
             var value = ref.value;
             return genAttrSegment(name, value);
@@ -9376,7 +9421,7 @@
 
     function genDOMPropSegments(props, attrs) {
         var segments = [];
-        props.forEach(function(ref) {
+        props.forEach(function (ref) {
             var name = ref.name;
             var value = ref.value;
             name = propsToAttrMap[name] || name.toLowerCase();
@@ -9385,7 +9430,7 @@
                 isRenderableAttr(name) &&
                 !(
                     attrs &&
-                    attrs.some(function(a) {
+                    attrs.some(function (a) {
                         return a.name === name;
                     })
                 )
@@ -9412,12 +9457,11 @@
                     ? ' ' + name
                     : ' ' + name + '="' + JSON.parse(value) + '"'
             };
-        } else {
-            return {
-                type: EXPRESSION,
-                value: '_ssrAttr(' + JSON.stringify(name) + ',' + value + ')'
-            };
         }
+        return {
+            type: EXPRESSION,
+            value: '_ssrAttr(' + JSON.stringify(name) + ',' + value + ')'
+        };
     }
 
     function genClassSegments(staticClass, classBinding) {
@@ -9428,14 +9472,13 @@
                     value: ' class="' + JSON.parse(staticClass) + '"'
                 }
             ];
-        } else {
-            return [
-                {
-                    type: EXPRESSION,
-                    value: '_ssrClass(' + (staticClass || 'null') + ',' + (classBinding || 'null') + ')'
-                }
-            ];
         }
+        return [
+            {
+                type: EXPRESSION,
+                value: '_ssrClass(' + (staticClass || 'null') + ',' + (classBinding || 'null') + ')'
+            }
+        ];
     }
 
     function genStyleSegments(staticStyle, parsedStaticStyle, styleBinding, vShowExpression) {
@@ -9446,11 +9489,11 @@
                     value: ' style=' + JSON.stringify(staticStyle)
                 }
             ];
-        } else {
-            return [
-                {
-                    type: EXPRESSION,
-                    value:
+        }
+        return [
+            {
+                type: EXPRESSION,
+                value:
                         '_ssrStyle(' +
                         (parsedStaticStyle || 'null') +
                         ',' +
@@ -9458,9 +9501,8 @@
                         ', ' +
                         (vShowExpression ? '{ display: (' + vShowExpression + ") ? '' : 'none' }" : 'null') +
                         ')'
-                }
-            ];
-        }
+            }
+        ];
     }
 
     var optimizability = {
@@ -9577,7 +9619,7 @@
         return (
             node.type === 1 &&
             node.directives &&
-            node.directives.some(function(d) {
+            node.directives.some(function (d) {
                 return !isBuiltInDir(d.name);
             })
         );
@@ -9588,7 +9630,7 @@
             node.type === 1 &&
             node.tag === 'select' &&
             node.directives != null &&
-            node.directives.some(function(d) {
+            node.directives.some(function (d) {
                 return d.name === 'model';
             })
         );
@@ -9608,9 +9650,9 @@
     }
 
     function genSSRElement(el, state) {
-        if (el['for'] && !el.forProcessed) {
+        if (el.for && !el.forProcessed) {
             return genFor(el, state, genSSRElement);
-        } else if (el['if'] && !el.ifProcessed) {
+        } else if (el.if && !el.ifProcessed) {
             return genIf(el, state, genSSRElement);
         } else if (el.tag === 'template' && !el.slotTarget) {
             return el.ssrOptimizability === optimizability.FULL
@@ -9678,7 +9720,7 @@
     }
 
     function elementToSegments(el, state) {
-        if (el['for'] && !el.forProcessed) {
+        if (el.for && !el.forProcessed) {
             el.forProcessed = true;
             return [
                 {
@@ -9686,7 +9728,7 @@
                     value: genFor(el, state, elementToString, '_ssrList')
                 }
             ];
-        } else if (el['if'] && !el.ifProcessed) {
+        } else if (el.if && !el.ifProcessed) {
             el.ifProcessed = true;
             return [
                 {
@@ -9706,11 +9748,11 @@
             isUnaryTag && isUnaryTag(el.tag)
                 ? []
                 : [
-                      {
-                          type: RAW,
-                          value: '</' + el.tag + '>'
-                      }
-                  ];
+                    {
+                        type: RAW,
+                        value: '</' + el.tag + '>'
+                    }
+                ];
         return openSegments.concat(childrenSegments, close);
     }
 
@@ -9936,7 +9978,7 @@
     }
 
     function checkFor(node, text, warn, range) {
-        checkExpression(node['for'] || '', text, warn, range);
+        checkExpression(node.for || '', text, warn, range);
         checkIdentifier(node.alias, 'v-for alias', text, warn, range);
         checkIdentifier(node.iterator1, 'v-for iterator', text, warn, range);
         checkIdentifier(node.iterator2, 'v-for iterator', text, warn, range);
@@ -10110,7 +10152,7 @@
             {
                 if (compiled.errors && compiled.errors.length) {
                     if (options.outputSourceRange) {
-                        compiled.errors.forEach(function(e) {
+                        compiled.errors.forEach(function (e) {
                             warn$$1(
                                 'Error compiling template:\n\n' +
                                     e.msg +
@@ -10125,7 +10167,7 @@
                                 template +
                                 '\n\n' +
                                 compiled.errors
-                                    .map(function(e) {
+                                    .map(function (e) {
                                         return '- ' + e;
                                     })
                                     .join('\n') +
@@ -10137,11 +10179,11 @@
 
                 if (compiled.tips && compiled.tips.length) {
                     if (options.outputSourceRange) {
-                        compiled.tips.forEach(function(e) {
+                        compiled.tips.forEach(function (e) {
                             return tip(e.msg, vm);
                         });
                     } else {
-                        compiled.tips.forEach(function(msg) {
+                        compiled.tips.forEach(function (msg) {
                             return tip(msg, vm);
                         });
                     }
@@ -10150,7 +10192,7 @@
             var res = {};
             var fnGenErrors = [];
             res.render = createFunction(compiled.render, fnGenErrors);
-            res.staticRenderFns = compiled.staticRenderFns.map(function(code) {
+            res.staticRenderFns = compiled.staticRenderFns.map(function (code) {
                 return createFunction(code, fnGenErrors);
             });
             {
@@ -10158,7 +10200,7 @@
                     warn$$1(
                         'Failed to generate render function:\n\n' +
                             fnGenErrors
-                                .map(function(ref) {
+                                .map(function (ref) {
                                     var err = ref.err;
                                     var code = ref.code;
                                     return err.toString() + ' in\n\n' + code + '\n';
@@ -10279,7 +10321,10 @@
 
     function normalizeArrayChildren(children, nestedIndex) {
         var res = [];
-        var i, c, lastIndex, last;
+        var i,
+            c,
+            lastIndex,
+            last;
 
         for (i = 0; i < children.length; i++) {
             c = children[i];
@@ -10308,16 +10353,14 @@
                 } else if (c !== '') {
                     res.push(createTextVNode(c));
                 }
+            } else if (isTextNode(c) && isTextNode(last)) {
+                res[lastIndex] = createTextVNode(last.text + c.text);
             } else {
-                if (isTextNode(c) && isTextNode(last)) {
-                    res[lastIndex] = createTextVNode(last.text + c.text);
-                } else {
-                    if (isTrue(children._isVList) && isDef(c.tag) && isUndef(c.key) && isDef(nestedIndex)) {
-                        c.key = '__vlist' + nestedIndex + '_' + i + '__';
-                    }
-
-                    res.push(c);
+                if (isTrue(children._isVList) && isDef(c.tag) && isUndef(c.key) && isDef(nestedIndex)) {
+                    c.key = '__vlist' + nestedIndex + '_' + i + '__';
                 }
+
+                res.push(c);
             }
         }
 
@@ -10342,8 +10385,8 @@
 
         var Vue = vm.constructor;
 
-        while (Vue['super']) {
-            Vue = Vue['super'];
+        while (Vue.super) {
+            Vue = Vue.super;
         }
 
         extend(Vue.prototype, ssrHelpers);
@@ -10376,7 +10419,10 @@
 
     function renderStringList(val, render) {
         var ret = '';
-        var i, l, keys, key;
+        var i,
+            l,
+            keys,
+            key;
 
         if (Array.isArray(val) || typeof val === 'string') {
             for (i = 0, l = val.length; i < l; i++) {
@@ -10466,10 +10512,9 @@
                     if (isBuiltInModifier(key)) {
                         warn('Avoid overwriting built-in modifier in config.keyCodes: .' + key);
                         return false;
-                    } else {
-                        target[key] = value;
-                        return true;
                     }
+                    target[key] = value;
+                    return true;
                 }
             });
         }
@@ -10483,7 +10528,8 @@
     }
 
     function _traverse(val, seen) {
-        var i, keys;
+        var i,
+            keys;
         var isA = Array.isArray(val);
 
         if ((!isA && !isObject(val)) || Object.isFrozen(val) || val instanceof VNode) {
@@ -10520,7 +10566,7 @@
         var perf = inBrowser && window.performance;
         if (perf && perf.mark && perf.measure && perf.clearMarks && perf.clearMeasures);
     }
-    var normalizeEvent = cached(function(name) {
+    var normalizeEvent = cached(function (name) {
         var passive = name.charAt(0) === '&';
         name = passive ? name.slice(1) : name;
         var once$$1 = name.charAt(0) === '~';
@@ -10556,7 +10602,11 @@
     }
 
     function updateListeners(on, oldOn, add, remove$$1, createOnceHandler, vm) {
-        var name, def$$1, cur, old, event;
+        var name,
+            def$$1,
+            cur,
+            old,
+            event;
 
         for (name in on) {
             def$$1 = cur = on[name];
@@ -10714,7 +10764,8 @@
             children = simpleNormalizeChildren(children);
         }
 
-        var vnode, ns;
+        var vnode,
+            ns;
 
         if (typeof tag === 'string') {
             var Ctor;
@@ -10741,9 +10792,8 @@
             }
 
             return vnode;
-        } else {
-            return createEmptyVNode();
         }
+        return createEmptyVNode();
     }
 
     function applyNS(vnode, ns, force) {
@@ -10770,13 +10820,17 @@
             traverse(data.style);
         }
 
-        if (isObject(data['class'])) {
-            traverse(data['class']);
+        if (isObject(data.class)) {
+            traverse(data.class);
         }
     }
 
     function renderList(val, render) {
-        var ret, i, l, keys, key;
+        var ret,
+            i,
+            l,
+            keys,
+            key;
 
         if (Array.isArray(val) || typeof val === 'string') {
             ret = new Array(val.length);
@@ -10849,9 +10903,8 @@
                 },
                 nodes
             );
-        } else {
-            return nodes;
         }
+        return nodes;
     }
 
     function resolveFilter(id) {
@@ -10861,9 +10914,8 @@
     function isKeyNotMatch(expect, actual) {
         if (Array.isArray(expect)) {
             return expect.indexOf(actual) === -1;
-        } else {
-            return expect !== actual;
         }
+        return expect !== actual;
     }
 
     function checkKeyCodes(eventKeyCode, key, builtInKeyCode, eventKeyName, builtInKeyName) {
@@ -10909,7 +10961,7 @@
                         if (isSync) {
                             var on = data.on || (data.on = {});
 
-                            on['update:' + key] = function($event) {
+                            on['update:' + key] = function ($event) {
                                 value[key] = $event;
                             };
                         }
@@ -11068,7 +11120,7 @@
                     slot.push(child);
                 }
             } else {
-                (slots['default'] || (slots['default'] = [])).push(child);
+                (slots.default || (slots.default = [])).push(child);
             }
         }
 
@@ -11149,7 +11201,7 @@
     }
 
     function proxyNormalSlot(slots, key) {
-        return function() {
+        return function () {
             return slots[key];
         };
     }
@@ -11158,7 +11210,7 @@
 
     function ensureCtor(comp, base) {
         if (comp.__esModule || (hasSymbol && comp[Symbol.toStringTag] === 'Module')) {
-            comp = comp['default'];
+            comp = comp.default;
         }
 
         return isObject(comp) ? base.extend(comp) : comp;
@@ -11200,7 +11252,7 @@
             var sync = true;
             var timerLoading = null;
             var timerTimeout = null;
-            owner.$on('hook:destroyed', function() {
+            owner.$on('hook:destroyed', function () {
                 return remove(owners, owner);
             });
 
@@ -11224,7 +11276,7 @@
                 }
             };
 
-            var resolve = once(function(res) {
+            var resolve = once(function (res) {
                 factory.resolved = ensureCtor(res, baseCtor);
 
                 if (!sync) {
@@ -11233,7 +11285,7 @@
                     owners.length = 0;
                 }
             });
-            var reject = once(function(reason) {
+            var reject = once(function (reason) {
                 warn('Failed to resolve async component: ' + String(factory) + (reason ? '\nReason: ' + reason : ''));
 
                 if (isDef(factory.errorComp)) {
@@ -11261,7 +11313,7 @@
                         if (res.delay === 0) {
                             factory.loading = true;
                         } else {
-                            timerLoading = setTimeout(function() {
+                            timerLoading = setTimeout(function () {
                                 timerLoading = null;
 
                                 if (isUndef(factory.resolved) && isUndef(factory.error)) {
@@ -11273,7 +11325,7 @@
                     }
 
                     if (isDef(res.timeout)) {
-                        timerTimeout = setTimeout(function() {
+                        timerTimeout = setTimeout(function () {
                             timerTimeout = null;
 
                             if (isUndef(factory.resolved)) {
@@ -11480,7 +11532,7 @@
 
                 if (!source) {
                     if ('default' in inject[key]) {
-                        var provideDefault = inject[key]['default'];
+                        var provideDefault = inject[key].default;
                         result[key] = typeof provideDefault === 'function' ? provideDefault.call(vm) : provideDefault;
                     } else {
                         warn('Injection "' + key + '" not found', vm);
@@ -11495,8 +11547,8 @@
     function resolveConstructorOptions(Ctor) {
         var options = Ctor.options;
 
-        if (Ctor['super']) {
-            var superOptions = resolveConstructorOptions(Ctor['super']);
+        if (Ctor.super) {
+            var superOptions = resolveConstructorOptions(Ctor.super);
             var cachedSuperOptions = Ctor.superOptions;
 
             if (superOptions !== cachedSuperOptions) {
@@ -11558,7 +11610,7 @@
         this.listeners = data.on || emptyObject;
         this.injections = resolveInject(options.inject, parent);
 
-        this.slots = function() {
+        this.slots = function () {
             if (!this$1.$slots) {
                 normalizeScopedSlots(data.scopedSlots, (this$1.$slots = resolveSlots(children, parent)));
             }
@@ -11580,7 +11632,7 @@
         }
 
         if (options._scopeId) {
-            this._c = function(a, b, c, d) {
+            this._c = function (a, b, c, d) {
                 var vnode = createElement(contextVm, a, b, c, d, needNormalization);
 
                 if (vnode && !Array.isArray(vnode)) {
@@ -11591,7 +11643,7 @@
                 return vnode;
             };
         } else {
-            this._c = function(a, b, c, d) {
+            this._c = function (a, b, c, d) {
                 return createElement(contextVm, a, b, c, d, needNormalization);
             };
         }
@@ -11747,7 +11799,7 @@
         var listeners = data.on;
         data.on = data.nativeOn;
 
-        if (isTrue(Ctor.options['abstract'])) {
+        if (isTrue(Ctor.options.abstract)) {
             var slot = data.slot;
             data = {};
 
@@ -11896,7 +11948,7 @@
 
                 Promise.all(promises)
                     .then(resolve)
-                    ['catch'](reject);
+                    .catch(reject);
                 return;
             } catch (e) {
                 reject(e);
@@ -11957,14 +12009,14 @@
             var get = context.get;
 
             if (isDef(has)) {
-                has(key, function(hit) {
+                has(key, function (hit) {
                     if (hit === true && isDef(get)) {
-                        get(key, function(res) {
+                        get(key, function (res) {
                             if (isDef(registerComponent)) {
                                 registerComponent(userContext);
                             }
 
-                            res.components.forEach(function(register) {
+                            res.components.forEach(function (register) {
                                 return register(userContext);
                             });
                             write(res.html, next);
@@ -11974,13 +12026,13 @@
                     }
                 });
             } else if (isDef(get)) {
-                get(key, function(res) {
+                get(key, function (res) {
                     if (isDef(res)) {
                         if (isDef(registerComponent)) {
                             registerComponent(userContext);
                         }
 
-                        res.components.forEach(function(register) {
+                        res.components.forEach(function (register) {
                             return register(userContext);
                         });
                         write(res.html, next);
@@ -12052,8 +12104,8 @@
         var factory = node.asyncFactory;
 
         var resolve = function resolve(comp) {
-            if (comp.__esModule && comp['default']) {
-                comp = comp['default'];
+            if (comp.__esModule && comp.default) {
+                comp = comp.default;
             }
 
             var ref = node.asyncMeta;
@@ -12098,12 +12150,12 @@
 
         if (res) {
             if (typeof res.then === 'function') {
-                res.then(resolve, reject)['catch'](reject);
+                res.then(resolve, reject).catch(reject);
             } else {
                 var comp = res.component;
 
                 if (comp && typeof comp.then === 'function') {
-                    comp.then(resolve, reject)['catch'](reject);
+                    comp.then(resolve, reject).catch(reject);
                 }
             }
         }
@@ -12179,7 +12231,7 @@
 
         while (isDef(node)) {
             if (node.data && node.data.directives) {
-                tmp = node.data.directives.find(function(dir) {
+                tmp = node.data.directives.find(function (dir) {
                     return dir.name === 'show';
                 });
 
@@ -12293,10 +12345,11 @@
         var directives = ref.directives;
         if (directives === void 0) directives = {};
         var isUnaryTag = ref.isUnaryTag;
-        if (isUnaryTag === void 0)
+        if (isUnaryTag === void 0) {
             isUnaryTag = function isUnaryTag() {
                 return false;
             };
+        }
         var cache = ref.cache;
         var render = createRenderFunction(modules, directives, isUnaryTag, cache);
         return function renderToString(component, context, done) {
@@ -12306,13 +12359,13 @@
             }
 
             var result = '';
-            var write = createWriteFunction(function(text) {
+            var write = createWriteFunction(function (text) {
                 result += text;
                 return false;
             }, done);
 
             try {
-                render(component, write, context, function() {
+                render(component, write, context, function () {
                     done(null, result);
                 });
             } catch (e) {
@@ -12328,4 +12381,4 @@
         canBeLeftOpenTag: canBeLeftOpenTag
     });
     return entryServerBasicRenderer;
-});
+}));
