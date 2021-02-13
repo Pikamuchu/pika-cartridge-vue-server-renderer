@@ -1,8 +1,8 @@
 # Cartridge lib vue-server-renderer
 
 [![Version](https://img.shields.io/npm/v/cartridge_lib_vue-server-renderer.svg)](https://npmjs.org/package/cartridge_lib_vue-server-renderer)
-[![Build Status](https://travis-ci.com/pikamachu/pika-cartridge-vue-server-renderer.svg?branch=master)](https://travis-ci.com/pikamachu/pika-cartridge-vue-server-renderer)
-[![codecov](https://codecov.io/gh/pikamachu/pika-cartridge-vue-server-renderer/branch/master/graph/badge.svg)](https://codecov.io/gh/pikamachu/pika-cartridge-vue-server-renderer)
+[![Build Status](https://travis-ci.com/pikamachu/pika-cartridge-vue-server-renderer.svg?branch=main)](https://travis-ci.com/pikamachu/pika-cartridge-vue-server-renderer)
+[![codecov](https://codecov.io/gh/pikamachu/pika-cartridge-vue-server-renderer/branch/main/graph/badge.svg)](https://codecov.io/gh/pikamachu/pika-cartridge-vue-server-renderer)
 
 ## Introduction
 
