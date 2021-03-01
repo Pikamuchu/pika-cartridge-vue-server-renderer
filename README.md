@@ -1,6 +1,6 @@
 # Cartridge lib vue-server-renderer
 
-[![Version](https://img.shields.io/npm/v/cartridge_lib_vue-server-renderer.svg)](https://npmjs.org/package/cartridge_lib_vue-server-renderer)
+[![Version](https://img.shields.io/npm/v/cartridge_lib_vue_server_renderer.svg)](https://npmjs.org/package/cartridge_lib_vue_server_renderer)
 [![Build Status](https://travis-ci.com/pikamachu/pika-cartridge-vue-server-renderer.svg?branch=main)](https://travis-ci.com/pikamachu/pika-cartridge-vue-server-renderer)
 [![codecov](https://codecov.io/gh/pikamachu/pika-cartridge-vue-server-renderer/branch/main/graph/badge.svg)](https://codecov.io/gh/pikamachu/pika-cartridge-vue-server-renderer)
 
@@ -51,5 +51,7 @@ The vue-server-renderer module can be loaded using require cartridge as a standa
 ````
 var vue-server-renderer = require('*/cartridge/scripts/lib/vue-server-renderer/index');
 ````
+
+See usage examples on [cartridge-vue-server-renderer-examples](https://github.com/pikamachu/pika-cartridge-vue-server-renderer-examples) repository
 
 See [vue-server-renderer](https://www.npmjs.com/package/vue-server-renderer) documentation for module usage.
