@@ -9,7 +9,7 @@ describe('vue-server-renderer library', () => {
     before(() => {
         // initialize test config and spies
         const cartridgeConfig = {
-            basePath: '../cartridges/lib_vue-server-renderer/cartridge',
+            basePath: '../cartridges/lib_vue_server_renderer/cartridge',
             pattern: '*/cartridge/(.*)',
             maxSearchModuleIterations: 20
         };
